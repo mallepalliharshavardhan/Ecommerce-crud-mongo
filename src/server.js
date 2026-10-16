@@ -1,27 +1,23 @@
-const connectDB = require('./db');
-const express = require('express')
+const connectDB = require('./config/db');
+ const app = require('./app')
 
-const app = express();
-
-app.use(express.json());
-
+ 
 const port = 5000;
 
-app.get("/", (req,res)=>{
-  res.send("Ecommerce API is running ")
-})
+ 
 
 async function startServer(){
    
 
     try{
           const db = await connectDB();
+          app.locals.db = db;
 
     app.listen(port,()=>{
     console.log(`Server is running on ${port}`);
 })
     }catch(err){
-        console.log(err);
+        console.log("failed to start server:",err);
     }
 
     
