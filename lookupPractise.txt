@@ -35,3 +35,42 @@ db.orders.aggregate([
         as:"orderDetails"
     }
 }],{$project:{name:1,email:1}})
+
+Requirement: Display each customer along with the status and total amount of all their orders.
+
+db.customers.aggregate([{$lookup:{
+  from:"orders",
+  localField:"_id",
+  foreignField:"customerId",
+  as:"CustomerOrderDetails"
+}} ,{$project:{name:1,orderStatus:"$CustomerOrderDetails.status", OrderTotalAmount:"$CustomerOrderDetails.totalAmount"}}])
+
+
+Requirement: query for each order with its payment method and payment status.
+
+db.orders.aggregate([{$lookup:{
+  from:"payments",
+  localField:"_id",
+  foreignField:"orderId",
+  as: "PaymentDetails"
+}},{$project:{paymentMethod:"$PaymentDetails.method", paymentStatus:"$PaymentDetails.paymentStatus"}}])
+
+
+$lookup with a pipeline (Interview style)
+Requirement: Display each order with only its Pending payments.
+
+     db.orders.aggregate([
+  {
+    $lookup: {
+      from: "payments",
+      localField: "_id",
+      foreignField: "orderId",
+      pipeline: [
+        { $match: { paymentStatus: "Paid" } }
+      ],
+      as: "paidPayments"
+    }
+  }
+])
+
+ 
