@@ -1,76 +1,129 @@
 Requirement: Display each payment with its related order details.
 
- db.payments.aggregate([
-  {
-    $lookup: {
-      from: "orders",
-      localField: "orderId",
-      foreignField: "_id",
-      as: "paymentOrderDetails"
-    }
-  }
-])
+              db.payments.aggregate([
+                {
+                  $lookup: {
+                    from: "orders",
+                    localField: "orderId",
+                    foreignField: "_id",
+                    as: "paymentOrderDetails"
+                  }
+                }
+              ])
 
 
 Requirement: “Display each customer along with all their orders.”
 
-db.customers.aggregate([
-    {$lookup:{
-        from:"orders",
-        localField:"_id",
-        foreignField:"customerId",
-        as:"customerOrders"
-    }
-  }
-])
+              db.customers.aggregate([
+                  {$lookup:{
+                      from:"orders",
+                      localField:"_id",
+                      foreignField:"customerId",
+                      as:"customerOrders"
+                  }
+                }
+              ])
 
 
 Requirement: “Display every order along with the name and email of the customer who placed it.”
 
-db.orders.aggregate([
-    {$lookup:{
-        from:"customers",
-        localField:"customerId",
-        foriegnField:"_id",
-        as:"orderDetails"
-    }
-}],{$project:{name:1,email:1}})
+                db.orders.aggregate([
+                    {$lookup:{
+                        from:"customers",
+                        localField:"customerId",
+                        foriegnField:"_id",
+                        as:"orderDetails"
+                    }
+                }],{$project:{name:1,email:1}})
 
 Requirement: Display each customer along with the status and total amount of all their orders.
 
-db.customers.aggregate([{$lookup:{
-  from:"orders",
-  localField:"_id",
-  foreignField:"customerId",
-  as:"CustomerOrderDetails"
-}} ,{$project:{name:1,orderStatus:"$CustomerOrderDetails.status", OrderTotalAmount:"$CustomerOrderDetails.totalAmount"}}])
+          db.customers.aggregate([{$lookup:{
+            from:"orders",
+            localField:"_id",
+            foreignField:"customerId",
+            as:"CustomerOrderDetails"
+          }} ,{$project:{
+            name:1,
+            orderStatus:"$CustomerOrderDetails.status",
+            OrderTotalAmount:"$CustomerOrderDetails.totalAmount"}}])
 
 
 Requirement: query for each order with its payment method and payment status.
 
-db.orders.aggregate([{$lookup:{
-  from:"payments",
-  localField:"_id",
-  foreignField:"orderId",
-  as: "PaymentDetails"
-}},{$project:{paymentMethod:"$PaymentDetails.method", paymentStatus:"$PaymentDetails.paymentStatus"}}])
+        db.orders.aggregate([{$lookup:{
+          from:"payments",
+          localField:"_id",
+          foreignField:"orderId",
+          as: "PaymentDetails"
+        }},{$project:{
+          paymentMethod:"$PaymentDetails.method", 
+        paymentStatus:"$PaymentDetails.paymentStatus"}}])
 
 
 $lookup with a pipeline (Interview style)
 Requirement: Display each order with only its Pending payments.
 
-     db.orders.aggregate([
-  {
-    $lookup: {
-      from: "payments",
-      localField: "_id",
-      foreignField: "orderId",
-      pipeline: [
-        { $match: { paymentStatus: "Paid" } }
-      ],
-      as: "paidPayments"
-    }
-  }
-])
+            db.orders.aggregate([
+          {
+            $lookup: {
+              from: "payments",
+              localField: "_id",
+              foreignField: "orderId",
+              pipeline: [
+                { $match: { paymentStatus: "Paid" } }
+              ],
+              as: "paidPayments"
+            }
+          }
+        ])
+
+Requirement: Find all orders where city is "Hyderabad".
+
+            db.orders.aggregate([
+              { $lookup:{
+                from:"customers",
+                localField:"_id",
+                foriegnField:" customerId",
+                as:"HyderabadOrders"
+              }
+            ,
+              }
+              {$match:{ city:"Hyderabad"}}
+            ])
+
+ Requirement: Find all orders where status is "Delivered".
+
+  db.orders.aggregate([{$match:{status:"Delivered}}])
+
+ Requirement: Using the trainer's orders collection:
+ Display only customer, product, and amount. Hide _id.
+
+    db.orders.aggregate([{$project:{_id:0,customerId:1,status:1,totalAmount:1}}])
+
+
+ Calculate total sales for each order status.
+
+               db.orders.aggregate([
+                {
+                  $group:{
+                    _id:"$status",
+                    totalSales: {$sum:"$totalAmount"}
+                  }
+                }
+               ])
+
+ Find the 3 orders with the highest totalAmount.
+                db.orders.aggregate([
+                  {$sort:{totalAmount:-1}},{$limit:3}
+                ])
 
  
+  Calculate the total totalAmount for Delivered orders only.
+                  db.orders.aggregate([{
+                   $match:{status:"Delivered"
+                    }},
+                  {$group:{
+                      _id:"$status",
+                       totalAmount:{$sum:"$totalAmount"}
+                    }}])
