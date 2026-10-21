@@ -145,3 +145,43 @@ requirement:You need page 2 with 4 orders per page, sorted by orderId ascending.
         {$skip:4},
         {$limit:4}
        ])
+
+------------>>   Next topic: $lookup + $unwind ---------------------
+
+
+task 1: Using your trainer's schema:
+- orders.customerId matches customers.customerId.
+- Join the customers collection to orders.
+- Store the matching customer documents in customersDetails.
+
+            db.orders.aggregate([
+            {$lookup: {
+            from:"customers",
+            localField:"customerId",
+            foreignField: "customerId",
+            as:"customerDetails"
+            },{$unwind:"$orders"}
+            }])
+
+Requirement: Return each order with these fields only:
+- orderId
+- totalAmount
+- Customer's name
+- Customer's city
+Add a $project stage after your working $lookup and $unwind stages.
+
+       db.orders.aggregate([
+        {$lookup:{
+          from:"customers",
+          localField:"customerId",
+          foreignField:"_id",
+          as:"orderDetails"
+        }},
+        {$unwind:"$orderDetails"},
+        {
+          $project:{
+            _id:0,orderId:1,totalAmount:1,"Customer's name": "$orderDetails.name", "Customer's City":"$orderDetails.city"
+          }
+        },
+       ])
+
