@@ -127,3 +127,21 @@ Requirement: Find all orders where city is "Hyderabad".
                       _id:"$status",
                        totalAmount:{$sum:"$totalAmount"}
                     }}])
+
+
+  // $skip
+
+requirement: You need page 3 with 2 orders per page, sorted by orderId ascending.
+      db.orders.aggregate([
+  {$sort:{orderId:1}},
+  {$skip:4},
+  {$limit:2}
+])
+
+requirement:You need page 2 with 4 orders per page, sorted by orderId ascending.
+      
+       db.orders.aggregate([
+        {$sort:{orderId:1}},
+        {$skip:4},
+        {$limit:4}
+       ])
