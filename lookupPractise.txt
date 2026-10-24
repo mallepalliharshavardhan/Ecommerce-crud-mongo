@@ -185,3 +185,13 @@ Add a $project stage after your working $lookup and $unwind stages.
         },
        ])
 
+-----------> Next: $push vs $addToSet ------------
+
+write an aggregation that groups orders by customer and collects all their totalAmount, including duplicates, into an array named totalAmount.
+
+  db.orders.aggregate([
+    {$group:{
+      id:"$customerId",
+      orderTotal:{$push: "$totalAmount"}
+    }}
+  ])
